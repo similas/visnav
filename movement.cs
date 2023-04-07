@@ -4,14 +4,15 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
-
+using UnityEngine.UI;
 public class movement : Agent
 {
-    public float speed = 10;
+    public float speed = 100;
     float rewardSum = 0;
     Rigidbody rBody;
     public Transform myTargetTransform;
     public Transform myAgentTransform;
+    public Text textReward;
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
@@ -20,11 +21,7 @@ public class movement : Agent
 
     void Update()
     {
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-        Vector3 movement = new Vector3(x, 0, z);
-        movement = Vector3.ClampMagnitude(movement, 1);
-        transform.Translate(movement * speed * Time.deltaTime);
+
     }
 
     
@@ -55,8 +52,8 @@ public class movement : Agent
     {
         // Actions, size = 2
         Vector3 controlSignal = Vector3.zero;
-        controlSignal.x = actionBuffers.ContinuousActions[0];
-        controlSignal.z = actionBuffers.ContinuousActions[1];
+        controlSignal.x = actionBuffers.ContinuousActions[0] * 30.0f;
+        controlSignal.z = actionBuffers.ContinuousActions[1] * 30.0f;
         rBody.AddForce(controlSignal * forceMultiplier);
 
         // Rewards
@@ -67,7 +64,7 @@ public class movement : Agent
         {
             SetReward(1.0f);
             rewardSum += 1.0f;
-            print(rewardSum);
+            textReward.text = "Reward" + rewardSum;
             EndEpisode();
         }
 
@@ -76,7 +73,7 @@ public class movement : Agent
         {
             SetReward(-2.0f);
             rewardSum -= 2.0f;
-            print(rewardSum);
+            textReward.text = "Reward" + rewardSum;
             EndEpisode();
         }
     }

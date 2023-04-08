@@ -1,18 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using UnityEngine.UI;
+using Random=UnityEngine.Random;
 public class movement : Agent
 {
     public float speed = 100;
     float rewardSum = 0;
+    int counterEpisode = 0;
     Rigidbody rBody;
     public Transform myTargetTransform;
     public Transform myAgentTransform;
+    public Transform myObstacleTransform;
     public Text textReward;
+    public Text textEpisode;
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
@@ -28,9 +33,34 @@ public class movement : Agent
     public override void OnEpisodeBegin()
     {
         // Move the target to a new spot
-        myAgentTransform.localPosition = new Vector3(Random.value * 8 - 4,
-                                            0.5f,
-                                            Random.value * 8 - 4);
+        //for doubles
+        float agentNewRandomX = Random.Range(-3,3);
+        float agentNewRandomZ = Random.Range(-3,3);
+
+        float targetNewRandomX = Random.Range(-3,3);
+        float targetNewRandomZ = Random.Range(-3,3);
+
+        float obstacleNewRandomX = 0.0f;
+        float obstacleNewRandomZ = 0.0f;
+
+        while ( (Math.Abs(agentNewRandomX - targetNewRandomX) < 2 || Math.Abs(agentNewRandomZ - targetNewRandomZ) < 2) &&
+                (Math.Abs(agentNewRandomX - obstacleNewRandomX) < 2 || Math.Abs(agentNewRandomZ - obstacleNewRandomZ) < 2) &&
+                (Math.Abs(targetNewRandomX - obstacleNewRandomX) < 2 || Math.Abs(targetNewRandomZ - obstacleNewRandomZ) < 2)
+              )
+        {
+            agentNewRandomX = Random.Range(-3,3);
+            agentNewRandomZ = Random.Range(-3,3);
+
+            targetNewRandomX = Random.Range(-3,3);
+            targetNewRandomZ = Random.Range(-3,3);
+        }
+
+        myAgentTransform.localPosition = new Vector3(agentNewRandomX, 0.5f, agentNewRandomZ);
+        myTargetTransform.localPosition = new Vector3(targetNewRandomX, 0.5f, targetNewRandomZ);
+
+        // myTargetTransform.localPosition = new Vector3(Random.value * 8 - 4,
+        //                                     0.0f,
+        //                                     Random.value * 8 - 4);
     }
 
 
@@ -39,6 +69,7 @@ public class movement : Agent
         // Target and Agent positions
         sensor.AddObservation(myTargetTransform.localPosition);
         sensor.AddObservation(myAgentTransform.localPosition);
+        sensor.AddObservation(myObstacleTransform.localPosition);
 
         // Agent velocity
         sensor.AddObservation(rBody.velocity.x);
@@ -64,17 +95,34 @@ public class movement : Agent
         {
             SetReward(1.0f);
             rewardSum += 1.0f;
-            textReward.text = "Reward" + rewardSum;
+            textReward.text = "Reward = " + rewardSum;
             EndEpisode();
+            counterEpisode++;
+            textEpisode.text = "Episode = " + counterEpisode;
+        }
+
+        float distanceToObstacle = Vector3.Distance(this.transform.localPosition, myObstacleTransform.localPosition);
+
+        // Obstacle collision
+        if (distanceToObstacle < 1.42f)
+        {
+            SetReward(-1.0f);
+            rewardSum -= 1.0f;
+            textReward.text = "Reward = " + rewardSum;
+            EndEpisode();
+            counterEpisode++;
+            textEpisode.text = "Episode = " + counterEpisode;
         }
 
         // Fell off platform
-        else if (this.transform.localPosition.y < 0)
+        if (this.transform.localPosition.y < 0)
         {
             SetReward(-2.0f);
             rewardSum -= 2.0f;
-            textReward.text = "Reward" + rewardSum;
+            textReward.text = "Reward = " + rewardSum;
             EndEpisode();
+            counterEpisode++;
+            textEpisode.text = "Episode = " + counterEpisode;
         }
     }
 

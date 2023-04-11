@@ -18,6 +18,11 @@ public class movement : Agent
     public Transform myObstacleTransform;
     public Text textReward;
     public Text textEpisode;
+    public Vector3 movement_ = new Vector3(1, 0, 0);
+    public int movingObsRandom1;
+    public int movingObsRandom2;
+    public int stepsInEpisode = 0;
+
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
@@ -27,11 +32,19 @@ public class movement : Agent
     void Update()
     {
 
+        Vector3 movement_ = new Vector3(movingObsRandom1, 0, movingObsRandom2);
+        if (myObstacleTransform.localPosition.x < 4 && myObstacleTransform.localPosition.x > -4 &&
+            myObstacleTransform.localPosition.z < 4 && myObstacleTransform.localPosition.z > -4)
+        {
+        myObstacleTransform.Translate(movement_ * Time.deltaTime * 2, Space.World);
+        }
     }
 
     
     public override void OnEpisodeBegin()
     {
+        movingObsRandom1 = Random.Range(-2,2);
+        movingObsRandom2 = Random.Range(-2,2);
         // Move the target to a new spot
         //for doubles
         float agentNewRandomX = Random.Range(-3,3);
@@ -40,11 +53,11 @@ public class movement : Agent
         float targetNewRandomX = Random.Range(-3,3);
         float targetNewRandomZ = Random.Range(-3,3);
 
-        float obstacleNewRandomX = 0.0f;
-        float obstacleNewRandomZ = 0.0f;
+        float obstacleNewRandomX = Random.Range(-3,3);
+        float obstacleNewRandomZ = Random.Range(-3,3);
 
-        while ( (Math.Abs(agentNewRandomX - targetNewRandomX) < 2 || Math.Abs(agentNewRandomZ - targetNewRandomZ) < 2) &&
-                (Math.Abs(agentNewRandomX - obstacleNewRandomX) < 2 || Math.Abs(agentNewRandomZ - obstacleNewRandomZ) < 2) &&
+        while ( (Math.Abs(agentNewRandomX - targetNewRandomX) < 2 || Math.Abs(agentNewRandomZ - targetNewRandomZ) < 2) ||
+                (Math.Abs(agentNewRandomX - obstacleNewRandomX) < 2 || Math.Abs(agentNewRandomZ - obstacleNewRandomZ) < 2) ||
                 (Math.Abs(targetNewRandomX - obstacleNewRandomX) < 2 || Math.Abs(targetNewRandomZ - obstacleNewRandomZ) < 2)
               )
         {
@@ -53,19 +66,22 @@ public class movement : Agent
 
             targetNewRandomX = Random.Range(-3,3);
             targetNewRandomZ = Random.Range(-3,3);
+
+            obstacleNewRandomX = Random.Range(-3,3);
+            obstacleNewRandomZ = Random.Range(-3,3);
         }
 
         myAgentTransform.localPosition = new Vector3(agentNewRandomX, 0.5f, agentNewRandomZ);
         myTargetTransform.localPosition = new Vector3(targetNewRandomX, 0.5f, targetNewRandomZ);
+        myObstacleTransform.localPosition = new Vector3(obstacleNewRandomX, 0.5f, obstacleNewRandomZ);
 
-        // myTargetTransform.localPosition = new Vector3(Random.value * 8 - 4,
-        //                                     0.0f,
-        //                                     Random.value * 8 - 4);
     }
 
 
     public override void CollectObservations(VectorSensor sensor)
     {
+        
+        stepsInEpisode++;
         // Target and Agent positions
         sensor.AddObservation(myTargetTransform.localPosition);
         sensor.AddObservation(myAgentTransform.localPosition);
@@ -91,6 +107,12 @@ public class movement : Agent
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, myTargetTransform.localPosition);
 
         // Reached target
+        if (stepsInEpisode > 100)
+        {
+            stepsInEpisode = 0;
+            EndEpisode();
+        }
+        
         if (distanceToTarget < 1.42f)
         {
             SetReward(1.0f);

@@ -22,10 +22,12 @@ public class movement : Agent
     public int movingObsRandom1;
     public int movingObsRandom2;
     public int stepsInEpisode = 0;
+    [SerializeField] CameraSensor agentCamera;
 
     void Start()
     {
         rBody = GetComponent<Rigidbody>();
+        // agentCamera = GetComponent<CameraSensor>();
     }
 
 
@@ -38,6 +40,8 @@ public class movement : Agent
         {
         myObstacleTransform.Translate(movement_ * Time.deltaTime * 2, Space.World);
         }
+        stepsInEpisode++;
+        print(stepsInEpisode);
     }
 
     
@@ -50,8 +54,8 @@ public class movement : Agent
         float agentNewRandomX = Random.Range(-3,3);
         float agentNewRandomZ = Random.Range(-3,3);
 
-        float targetNewRandomX = Random.Range(-3,3);
-        float targetNewRandomZ = Random.Range(-3,3);
+        float targetNewRandomX = Random.Range(-2,2);
+        float targetNewRandomZ = Random.Range(-2,2);
 
         float obstacleNewRandomX = Random.Range(-3,3);
         float obstacleNewRandomZ = Random.Range(-3,3);
@@ -64,8 +68,8 @@ public class movement : Agent
             agentNewRandomX = Random.Range(-3,3);
             agentNewRandomZ = Random.Range(-3,3);
 
-            targetNewRandomX = Random.Range(-3,3);
-            targetNewRandomZ = Random.Range(-3,3);
+            targetNewRandomX = Random.Range(-2,2);
+            targetNewRandomZ = Random.Range(-2,2);
 
             obstacleNewRandomX = Random.Range(-3,3);
             obstacleNewRandomZ = Random.Range(-3,3);
@@ -78,19 +82,22 @@ public class movement : Agent
     }
 
 
-    public override void CollectObservations(VectorSensor sensor)
-    {
+    // public override void CollectObservations(VectorSensor sensor)
+    // {
         
-        stepsInEpisode++;
-        // Target and Agent positions
-        sensor.AddObservation(myTargetTransform.localPosition);
-        sensor.AddObservation(myAgentTransform.localPosition);
-        sensor.AddObservation(myObstacleTransform.localPosition);
+    //     stepsInEpisode++;
+    //     // Target and Agent positions
+    //     sensor.AddObservation(myTargetTransform.localPosition);
+    //     sensor.AddObservation(myAgentTransform.localPosition);
+    //     sensor.AddObservation(myObstacleTransform.localPosition);
 
-        // Agent velocity
-        sensor.AddObservation(rBody.velocity.x);
-        sensor.AddObservation(rBody.velocity.z);
-    }
+    //     // Agent velocity
+    //     sensor.AddObservation(rBody.velocity.x);
+    //     sensor.AddObservation(rBody.velocity.z);
+
+    //     // Agent camera
+    //     print(agentCamera);
+    // }
 
 
     public float forceMultiplier = 10;
@@ -107,10 +114,15 @@ public class movement : Agent
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, myTargetTransform.localPosition);
 
         // Reached target
-        if (stepsInEpisode > 100)
+        if (stepsInEpisode > 500)
         {
-            stepsInEpisode = 0;
+            SetReward(-1.0f);
+            rewardSum -= 1.0f;
+            textReward.text = "Reward = " + rewardSum;
             EndEpisode();
+            stepsInEpisode = 0;
+            counterEpisode++;
+            textEpisode.text = "Episode = " + counterEpisode;
         }
         
         if (distanceToTarget < 1.42f)
@@ -119,6 +131,7 @@ public class movement : Agent
             rewardSum += 1.0f;
             textReward.text = "Reward = " + rewardSum;
             EndEpisode();
+            stepsInEpisode = 0;
             counterEpisode++;
             textEpisode.text = "Episode = " + counterEpisode;
         }
@@ -128,12 +141,13 @@ public class movement : Agent
         // Obstacle collision
         if (distanceToObstacle < 1.42f)
         {
-            SetReward(-1.0f);
-            rewardSum -= 1.0f;
-            textReward.text = "Reward = " + rewardSum;
-            EndEpisode();
-            counterEpisode++;
-            textEpisode.text = "Episode = " + counterEpisode;
+            // SetReward(-1.0f);
+            // rewardSum -= 1.0f;
+            // textReward.text = "Reward = " + rewardSum;
+            // EndEpisode();
+            // stepsInEpisode = 0;
+            // counterEpisode++;
+            // textEpisode.text = "Episode = " + counterEpisode;
         }
 
         // Fell off platform
@@ -143,6 +157,7 @@ public class movement : Agent
             rewardSum -= 2.0f;
             textReward.text = "Reward = " + rewardSum;
             EndEpisode();
+            stepsInEpisode = 0;
             counterEpisode++;
             textEpisode.text = "Episode = " + counterEpisode;
         }

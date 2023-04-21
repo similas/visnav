@@ -34,12 +34,12 @@ public class movement : Agent
     void Update()
     {
 
-        Vector3 movement_ = new Vector3(movingObsRandom1, 0, movingObsRandom2);
-        if (myObstacleTransform.localPosition.x < 4 && myObstacleTransform.localPosition.x > -4 &&
-            myObstacleTransform.localPosition.z < 4 && myObstacleTransform.localPosition.z > -4)
-        {
-        myObstacleTransform.Translate(movement_ * Time.deltaTime * 2, Space.World);
-        }
+        // Vector3 movement_ = new Vector3(movingObsRandom1, 0, movingObsRandom2);
+        // if (myObstacleTransform.localPosition.x < 4 && myObstacleTransform.localPosition.x > -4 &&
+        //     myObstacleTransform.localPosition.z < 4 && myObstacleTransform.localPosition.z > -4)
+        // {
+        // myObstacleTransform.Translate(movement_ * Time.deltaTime * 2, Space.World);
+        // }
         stepsInEpisode++;
         print(stepsInEpisode);
     }
@@ -77,7 +77,7 @@ public class movement : Agent
 
         myAgentTransform.localPosition = new Vector3(agentNewRandomX, 0.5f, agentNewRandomZ);
         myTargetTransform.localPosition = new Vector3(targetNewRandomX, 0.5f, targetNewRandomZ);
-        myObstacleTransform.localPosition = new Vector3(obstacleNewRandomX, 0.5f, obstacleNewRandomZ);
+        // myObstacleTransform.localPosition = new Vector3(obstacleNewRandomX, 0.5f, obstacleNewRandomZ);
 
     }
 
@@ -114,7 +114,7 @@ public class movement : Agent
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, myTargetTransform.localPosition);
 
         // Reached target
-        if (stepsInEpisode > 500)
+        if (stepsInEpisode > 2000)
         {
             SetReward(-1.0f);
             rewardSum -= 1.0f;
@@ -141,13 +141,13 @@ public class movement : Agent
         // Obstacle collision
         if (distanceToObstacle < 1.42f)
         {
-            // SetReward(-1.0f);
-            // rewardSum -= 1.0f;
-            // textReward.text = "Reward = " + rewardSum;
-            // EndEpisode();
-            // stepsInEpisode = 0;
-            // counterEpisode++;
-            // textEpisode.text = "Episode = " + counterEpisode;
+            SetReward(-1.0f);
+            rewardSum -= 1.0f;
+            textReward.text = "Reward = " + rewardSum;
+            EndEpisode();
+            stepsInEpisode = 0;
+            counterEpisode++;
+            textEpisode.text = "Episode = " + counterEpisode;
         }
 
         // Fell off platform

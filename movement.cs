@@ -114,7 +114,7 @@ public class movement : Agent
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, myTargetTransform.localPosition);
 
         // Reached target
-        if (stepsInEpisode > 2000)
+        if (stepsInEpisode > 350)
         {
             SetReward(-1.0f);
             rewardSum -= 1.0f;
